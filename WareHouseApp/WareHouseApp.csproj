@@ -72,6 +72,7 @@
     <Compile Include="Data\EmployeeRepository.cs" />
     <Compile Include="Data\StockMovementRepository.cs" />
     <Compile Include="Exceptions\AppExceptions.cs" />
+    <Compile Include="Forms\UiTheme.cs" />
     <Compile Include="Forms\LoginForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using WareHouseApp.Data;
 using WareHouseApp.Exceptions;
+using WareHouseApp.Properties;
 
 namespace WareHouseApp.Forms
 {
@@ -27,71 +28,108 @@ namespace WareHouseApp.Forms
         private void BuildUi()
         {
             Text = "Create Account";
-            StartPosition = FormStartPosition.CenterParent;
+            StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             MinimizeBox = false;
-            ClientSize = new Size(380, 360);
+            ClientSize = new Size(820, 480);
             BackColor = Color.White;
+            Font = new Font("Segoe UI", 9F);
 
-            int x = 40;
-            int width = 300;
+            int brandWidth = 330;
+            Controls.Add(BuildFormPanel(brandWidth));
+            Controls.Add(UiTheme.BrandPanel(brandWidth, ClientSize.Height, Resources.reliability,
+                "Join the team and start managing the warehouse today."));
+        }
 
-            var title = new Label
+        private Panel BuildFormPanel(int brandWidth)
+        {
+            var panel = new Panel
             {
-                Text = "Create a new account",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                Location = new Point(x, 20),
+                Dock = DockStyle.Fill,
+                BackColor = Color.White
+            };
+
+            int x1 = 45;
+            int colWidth = 185;
+            int gap = 25;
+            int x2 = x1 + colWidth + gap;
+            int fullWidth = (x2 + colWidth) - x1;
+
+            var heading = new Label
+            {
+                Text = "Create account",
+                ForeColor = UiTheme.TextDark,
+                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                Location = new Point(x1, 45),
                 AutoSize = true
             };
 
-            var lblUser = new Label { Text = "Username", Location = new Point(x, 60), AutoSize = true };
-            txtUsername = new TextBox { Location = new Point(x, 80), Width = width };
+            var sub = new Label
+            {
+                Text = "Fill in the details below to get started",
+                ForeColor = UiTheme.Muted,
+                Font = new Font("Segoe UI", 10F),
+                Location = new Point(x1, 87),
+                AutoSize = true
+            };
 
-            var lblName = new Label { Text = "Full name", Location = new Point(x, 112), AutoSize = true };
-            txtFullName = new TextBox { Location = new Point(x, 132), Width = width };
+            txtUsername = UiTheme.AddField(panel, "USERNAME", x1, 130, colWidth, false);
+            txtFullName = UiTheme.AddField(panel, "FULL NAME", x2, 130, colWidth, false);
+            txtPassword = UiTheme.AddField(panel, "PASSWORD", x1, 205, colWidth, true);
+            txtConfirm = UiTheme.AddField(panel, "CONFIRM PASSWORD", x2, 205, colWidth, true);
 
-            var lblPass = new Label { Text = "Password", Location = new Point(x, 164), AutoSize = true };
-            txtPassword = new TextBox { Location = new Point(x, 184), Width = width, UseSystemPasswordChar = true };
-
-            var lblConfirm = new Label { Text = "Confirm password", Location = new Point(x, 216), AutoSize = true };
-            txtConfirm = new TextBox { Location = new Point(x, 236), Width = width, UseSystemPasswordChar = true };
-
-            var lblRole = new Label { Text = "Role", Location = new Point(x, 268), AutoSize = true };
+            var roleLabel = new Label
+            {
+                Text = "ROLE",
+                ForeColor = UiTheme.Muted,
+                Font = new Font("Segoe UI", 9F),
+                Location = new Point(x1, 280),
+                AutoSize = true
+            };
             cmbRole = new ComboBox
             {
-                Location = new Point(x, 288),
-                Width = width,
-                DropDownStyle = ComboBoxStyle.DropDownList
+                Location = new Point(x1, 302),
+                Width = colWidth,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 11F)
             };
             cmbRole.Items.AddRange(new object[] { "Operator", "Admin" });
             cmbRole.SelectedIndex = 0;
 
-            var btnRegister = new Button
-            {
-                Text = "Register",
-                Location = new Point(x, 320),
-                Width = width,
-                Height = 32,
-                BackColor = Color.RoyalBlue,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
+            var btnRegister = UiTheme.PrimaryButton("Create Account", x1, 350, fullWidth);
             btnRegister.Click += BtnRegister_Click;
             AcceptButton = btnRegister;
 
-            Controls.Add(title);
-            Controls.Add(lblUser);
-            Controls.Add(txtUsername);
-            Controls.Add(lblName);
-            Controls.Add(txtFullName);
-            Controls.Add(lblPass);
-            Controls.Add(txtPassword);
-            Controls.Add(lblConfirm);
-            Controls.Add(txtConfirm);
-            Controls.Add(lblRole);
-            Controls.Add(cmbRole);
-            Controls.Add(btnRegister);
+            var prompt = new Label
+            {
+                Text = "Already have an account?",
+                ForeColor = UiTheme.Muted,
+                Font = new Font("Segoe UI", 9.5F),
+                Location = new Point(x1, 415),
+                AutoSize = true
+            };
+
+            var lnkBack = new LinkLabel
+            {
+                Text = "Back to login",
+                Font = new Font("Segoe UI Semibold", 9.5F),
+                LinkColor = UiTheme.Accent,
+                ActiveLinkColor = UiTheme.AccentHover,
+                Location = new Point(x1 + prompt.PreferredWidth + 4, 415),
+                AutoSize = true
+            };
+            lnkBack.LinkClicked += (s, e) => Close();
+
+            panel.Controls.Add(heading);
+            panel.Controls.Add(sub);
+            panel.Controls.Add(roleLabel);
+            panel.Controls.Add(cmbRole);
+            panel.Controls.Add(btnRegister);
+            panel.Controls.Add(prompt);
+            panel.Controls.Add(lnkBack);
+            return panel;
         }
 
         private void BtnRegister_Click(object sender, EventArgs e)

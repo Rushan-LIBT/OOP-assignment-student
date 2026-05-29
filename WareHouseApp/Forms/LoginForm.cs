@@ -5,6 +5,7 @@ using WareHouseApp.Data;
 using WareHouseApp.Exceptions;
 using WareHouseApp.Models;
 using WareHouseApp.People;
+using WareHouseApp.Properties;
 
 namespace WareHouseApp.Forms
 {
@@ -17,8 +18,6 @@ namespace WareHouseApp.Forms
 
         private TextBox txtUsername;
         private TextBox txtPassword;
-        private Button btnLogin;
-        private LinkLabel lnkSignUp;
 
         public LoginForm()
         {
@@ -31,61 +30,79 @@ namespace WareHouseApp.Forms
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
-            ClientSize = new Size(380, 320);
+            ClientSize = new Size(820, 480);
             BackColor = Color.White;
+            Font = new Font("Segoe UI", 9F);
 
-            var header = new Panel
+            int brandWidth = 330;
+            Controls.Add(BuildFormPanel(brandWidth));
+            Controls.Add(UiTheme.BrandPanel(brandWidth, ClientSize.Height, Resources.wholesale,
+                "Manage your inventory, customers and team in one place."));
+        }
+
+        private Panel BuildFormPanel(int brandWidth)
+        {
+            var panel = new Panel
             {
-                Dock = DockStyle.Top,
-                Height = 70,
-                BackColor = Color.RoyalBlue
-            };
-            var title = new Label
-            {
-                Text = "Warehouse Management System",
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                AutoSize = false,
                 Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter
+                BackColor = Color.White,
+                Padding = new Padding(0)
             };
-            header.Controls.Add(title);
 
-            var lblUser = new Label { Text = "Username", Location = new Point(40, 100), AutoSize = true };
-            txtUsername = new TextBox { Location = new Point(40, 122), Width = 300 };
+            int x = 60;
+            int width = ClientSize.Width - brandWidth - 120;
 
-            var lblPass = new Label { Text = "Password", Location = new Point(40, 160), AutoSize = true };
-            txtPassword = new TextBox { Location = new Point(40, 182), Width = 300, UseSystemPasswordChar = true };
-
-            btnLogin = new Button
+            var heading = new Label
             {
-                Text = "Login",
-                Location = new Point(40, 225),
-                Width = 300,
-                Height = 38,
-                BackColor = Color.RoyalBlue,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
-            btnLogin.Click += BtnLogin_Click;
-
-            lnkSignUp = new LinkLabel
-            {
-                Text = "Don't have an account? Sign up",
-                Location = new Point(40, 275),
+                Text = "Welcome back",
+                ForeColor = UiTheme.TextDark,
+                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                Location = new Point(x, 70),
                 AutoSize = true
             };
-            lnkSignUp.Click += (s, e) => OpenSignUp();
 
+            var sub = new Label
+            {
+                Text = "Please sign in to your account",
+                ForeColor = UiTheme.Muted,
+                Font = new Font("Segoe UI", 10F),
+                Location = new Point(x, 112),
+                AutoSize = true
+            };
+
+            txtUsername = UiTheme.AddField(panel, "USERNAME", x, 160, width, false);
+            txtPassword = UiTheme.AddField(panel, "PASSWORD", x, 235, width, true);
+
+            var btnLogin = UiTheme.PrimaryButton("Sign In", x, 315, width);
+            btnLogin.Click += BtnLogin_Click;
             AcceptButton = btnLogin;
 
-            Controls.Add(lblUser);
-            Controls.Add(txtUsername);
-            Controls.Add(lblPass);
-            Controls.Add(txtPassword);
-            Controls.Add(btnLogin);
-            Controls.Add(lnkSignUp);
-            Controls.Add(header);
+            var prompt = new Label
+            {
+                Text = "Don't have an account?",
+                ForeColor = UiTheme.Muted,
+                Font = new Font("Segoe UI", 9.5F),
+                Location = new Point(x, 385),
+                AutoSize = true
+            };
+
+            var lnkSignUp = new LinkLabel
+            {
+                Text = "Sign up",
+                Font = new Font("Segoe UI Semibold", 9.5F),
+                LinkColor = UiTheme.Accent,
+                ActiveLinkColor = UiTheme.AccentHover,
+                Location = new Point(x + prompt.PreferredWidth + 4, 385),
+                AutoSize = true
+            };
+            lnkSignUp.LinkClicked += (s, e) => OpenSignUp();
+
+            panel.Controls.Add(heading);
+            panel.Controls.Add(sub);
+            panel.Controls.Add(btnLogin);
+            panel.Controls.Add(prompt);
+            panel.Controls.Add(lnkSignUp);
+            return panel;
         }
 
         private void BtnLogin_Click(object sender, EventArgs e)
