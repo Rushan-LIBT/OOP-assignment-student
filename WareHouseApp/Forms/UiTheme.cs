@@ -64,6 +64,19 @@ namespace WareHouseApp.Forms
             return box;
         }
 
+        /// <summary>A flat dropdown used for column filters above the grids.</summary>
+        public static ComboBox FilterCombo(int x, int y, int width)
+        {
+            return new ComboBox
+            {
+                Location = new Point(x, y),
+                Width = width,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10F)
+            };
+        }
+
         /// <summary>A white "card" surface used to group content over the grey background.</summary>
         public static Panel CardPanel(DockStyle dock, int height = 0)
         {
