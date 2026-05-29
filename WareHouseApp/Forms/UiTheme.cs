@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace WareHouseApp.Forms
@@ -124,7 +125,7 @@ namespace WareHouseApp.Forms
                 BorderStyle = BorderStyle.None,
                 Font = new Font("Segoe UI", 12F),
                 Location = new Point(x, y + 22),
-                Width = width,
+                Width = isPassword ? width - 28 : width,
                 UseSystemPasswordChar = isPassword
             };
 
@@ -141,7 +142,61 @@ namespace WareHouseApp.Forms
             parent.Controls.Add(caption);
             parent.Controls.Add(box);
             parent.Controls.Add(underline);
+
+            if (isPassword)
+            {
+                AddPasswordToggle(parent, box, x + width - 24, y + 20);
+            }
             return box;
+        }
+
+        /// <summary>Adds a clickable eye icon that shows/hides the password text.</summary>
+        private static void AddPasswordToggle(Control parent, TextBox box, int x, int y)
+        {
+            bool visible = false;
+            var eye = new Panel
+            {
+                Size = new Size(24, 24),
+                Location = new Point(x, y),
+                BackColor = parent.BackColor,
+                Cursor = Cursors.Hand
+            };
+
+            eye.Paint += (s, e) => PaintEye(e.Graphics, eye.ClientRectangle, visible, visible ? Accent : Muted);
+            eye.Click += (s, e) =>
+            {
+                visible = !visible;
+                box.UseSystemPasswordChar = !visible;
+                eye.Invalidate();
+            };
+
+            parent.Controls.Add(eye);
+            eye.BringToFront();
+        }
+
+        private static void PaintEye(Graphics g, Rectangle bounds, bool open, Color color)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            using (var pen = new Pen(color, 1.6f))
+            using (var brush = new SolidBrush(color))
+            {
+                int midY = bounds.Y + bounds.Height / 2;
+                var eyeRect = new Rectangle(bounds.X + 2, midY - 6, bounds.Width - 4, 12);
+
+                // Almond shaped outline using two arcs.
+                g.DrawArc(pen, eyeRect, 200, 140);
+                g.DrawArc(pen, eyeRect, 20, 140);
+
+                // Pupil.
+                const int pupil = 4;
+                g.FillEllipse(brush, bounds.X + bounds.Width / 2 - pupil / 2, midY - pupil / 2, pupil, pupil);
+
+                // Slash when the password is hidden.
+                if (!open)
+                {
+                    g.DrawLine(pen, bounds.X + 4, bounds.Y + 4, bounds.Right - 4, bounds.Bottom - 4);
+                }
+            }
         }
 
         /// <summary>Creates a flat, full-width accent button.</summary>
