@@ -159,10 +159,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="WarehouseDB.mdf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="WarehouseDB_log.ldf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <DependentUpon>WarehouseDB.mdf</DependentUpon>
     </Content>
   </ItemGroup>
