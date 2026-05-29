@@ -40,11 +40,16 @@ namespace WareHouseApp.Forms
             Controls.Add(BuildRightContainer());
             Controls.Add(BuildSidebar());
 
-            // Select the first nav item (Home) once everything is wired up.
-            if (navItems.Count > 0)
+            // Select the first nav item (Dashboard) after the form is shown.
+            // PerformClick is ignored while the form is still invisible, so this
+            // is deferred to the Load event.
+            Load += (s, e) =>
             {
-                ((Button)FindButton(navItems[0])).PerformClick();
-            }
+                if (navItems.Count > 0)
+                {
+                    FindButton(navItems[0]).PerformClick();
+                }
+            };
         }
 
         private Panel BuildSidebar()
