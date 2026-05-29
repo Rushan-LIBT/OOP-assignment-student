@@ -55,6 +55,17 @@ namespace WareHouseApp.Data
                     Salary DECIMAL(18,2) NOT NULL DEFAULT 0
                 );");
 
+            db.ExecuteNonQuery(@"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name = 'StockMovements' AND xtype = 'U')
+                CREATE TABLE StockMovements (
+                    MovementID INT IDENTITY(1,1) PRIMARY KEY,
+                    MaterialID INT NOT NULL,
+                    MovementType NVARCHAR(3) NOT NULL,
+                    Quantity INT NOT NULL,
+                    MovedBy NVARCHAR(50) NULL,
+                    MovedAt DATETIME NOT NULL DEFAULT GETDATE()
+                );");
+
             SeedAdmin(db);
         }
 

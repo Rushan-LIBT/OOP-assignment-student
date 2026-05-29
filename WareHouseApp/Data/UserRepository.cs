@@ -107,6 +107,32 @@ namespace WareHouseApp.Data
             return Map(table.Rows[0]);
         }
 
+        /// <summary>Verifies the current password and stores the new one (hashed).</summary>
+        public void ChangePassword(int userId, string currentPassword, string newPassword)
+        {
+            DataTable table = Db.GetDataTable(
+                "SELECT PasswordHash FROM Users WHERE UserID = @id",
+                new SqlParameter("@id", userId));
+
+            if (table.Rows.Count == 0)
+            {
+                throw new ValidationException("User account not found.");
+            }
+            if (!PasswordHasher.Verify(currentPassword, table.Rows[0]["PasswordHash"].ToString()))
+            {
+                throw new ValidationException("Current password is incorrect.");
+            }
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            {
+                throw new ValidationException("New password must be at least 6 characters long.");
+            }
+
+            Db.ExecuteNonQuery(
+                "UPDATE Users SET PasswordHash = @hash WHERE UserID = @id",
+                new SqlParameter("@hash", PasswordHasher.Hash(newPassword)),
+                new SqlParameter("@id", userId));
+        }
+
         private static User Map(DataRow row)
         {
             return new User

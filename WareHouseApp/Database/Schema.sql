@@ -41,6 +41,16 @@ CREATE TABLE Employees (
     Salary DECIMAL(18,2) NOT NULL DEFAULT 0
 );
 
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name = 'StockMovements' AND xtype = 'U')
+CREATE TABLE StockMovements (
+    MovementID INT IDENTITY(1,1) PRIMARY KEY,
+    MaterialID INT NOT NULL,
+    MovementType NVARCHAR(3) NOT NULL,  -- 'IN' or 'OUT'
+    Quantity INT NOT NULL,
+    MovedBy NVARCHAR(50) NULL,
+    MovedAt DATETIME NOT NULL DEFAULT GETDATE()
+);
+
 -- Default administrator account.
 -- Username: admin   Password: admin123
 -- (The PasswordHash below is the SHA-256 hash of "admin123".)

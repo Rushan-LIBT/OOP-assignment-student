@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using WareHouseApp.People;
+using WareHouseApp.Properties;
 
 namespace WareHouseApp.Forms
 {
@@ -21,7 +22,7 @@ namespace WareHouseApp.Forms
         {
             currentUser = user;
             BuildUi();
-            ShowControl(new InventoryControl());
+            ShowControl(new HomeControl(currentUser));
         }
 
         private void BuildUi()
@@ -57,25 +58,37 @@ namespace WareHouseApp.Forms
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
-            var btnInventory = MakeNavButton("Inventory");
+            var btnHome = MakeNavButton("Home", Resources.reliability);
+            btnHome.Click += (s, e) => ShowControl(new HomeControl(currentUser));
+
+            var btnInventory = MakeNavButton("Inventory", Resources.menu);
             btnInventory.Click += (s, e) => ShowControl(new InventoryControl());
 
-            var btnCustomers = MakeNavButton("Customers");
+            var btnStock = MakeNavButton("Stock In / Out", Resources.wholesale);
+            btnStock.Click += (s, e) => ShowControl(new StockControl(currentUser));
+
+            var btnCustomers = MakeNavButton("Customers", Resources.user);
             btnCustomers.Click += (s, e) => ShowControl(new CustomerControl());
 
-            var btnEmployees = MakeNavButton("Employees");
+            var btnEmployees = MakeNavButton("Employees", Resources.administrator);
             btnEmployees.Enabled = currentUser.CanManageEmployees;
             btnEmployees.Click += (s, e) => ShowControl(new EmployeeControl());
 
-            var btnLogout = MakeNavButton("Logout");
+            var btnProfile = MakeNavButton("Profile", Resources.user);
+            btnProfile.Click += (s, e) => ShowControl(new ProfileControl(currentUser));
+
+            var btnLogout = MakeNavButton("Logout", Resources.logout);
             btnLogout.Dock = DockStyle.Bottom;
             btnLogout.BackColor = Color.Firebrick;
             btnLogout.Click += BtnLogout_Click;
 
             // Added bottom-to-top because each docks to the top of the remaining space.
+            sidebar.Controls.Add(btnProfile);
             sidebar.Controls.Add(btnEmployees);
             sidebar.Controls.Add(btnCustomers);
+            sidebar.Controls.Add(btnStock);
             sidebar.Controls.Add(btnInventory);
+            sidebar.Controls.Add(btnHome);
             sidebar.Controls.Add(lblWelcome);
             sidebar.Controls.Add(appTitle);
             sidebar.Controls.Add(btnLogout);
@@ -91,9 +104,9 @@ namespace WareHouseApp.Forms
             Controls.Add(sidebar);
         }
 
-        private Button MakeNavButton(string text)
+        private Button MakeNavButton(string text, Image icon)
         {
-            return new Button
+            var button = new Button
             {
                 Text = text,
                 Dock = DockStyle.Top,
@@ -105,6 +118,18 @@ namespace WareHouseApp.Forms
                 Padding = new Padding(20, 0, 0, 0),
                 Font = new Font("Segoe UI", 10F)
             };
+            button.FlatAppearance.BorderSize = 0;
+
+            if (icon != null)
+            {
+                button.Image = new Bitmap(icon, new Size(24, 24));
+                button.ImageAlign = ContentAlignment.MiddleLeft;
+                button.TextAlign = ContentAlignment.MiddleLeft;
+                button.TextImageRelation = TextImageRelation.ImageBeforeText;
+                button.Padding = new Padding(10, 0, 0, 0);
+            }
+
+            return button;
         }
 
         private void ShowControl(UserControl control)
