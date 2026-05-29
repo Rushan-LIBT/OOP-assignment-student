@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using WareHouseApp.Data;
 using WareHouseApp.Exceptions;
@@ -10,8 +11,11 @@ namespace WareHouseApp.Forms
     /// <summary>Employee management: list, search and CRUD for staff (Admin only).</summary>
     public class EmployeeControl : UserControl
     {
+        private const string AllRoles = "All roles";
+
         private readonly EmployeeRepository repository = new EmployeeRepository();
         private int selectedId;
+        private bool refreshingFilter;
 
         private DataGridView grid;
         private TextBox txtName;
@@ -20,10 +24,12 @@ namespace WareHouseApp.Forms
         private TextBox txtPhone;
         private TextBox txtSalary;
         private TextBox txtSearch;
+        private ComboBox cmbRoleFilter;
 
         public EmployeeControl()
         {
             BuildUi();
+            RefreshRoleFilter();
             LoadData();
         }
 
@@ -77,19 +83,39 @@ namespace WareHouseApp.Forms
         {
             var card = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Card, Padding = new Padding(16) };
 
-            var searchRow = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = UiTheme.Card };
+            var searchRow = new Panel { Dock = DockStyle.Top, Height = 56, BackColor = UiTheme.Card };
             var lblSearch = new Label
             {
                 Text = "Search",
                 ForeColor = UiTheme.Muted,
                 Font = new Font("Segoe UI", 9F),
-                Location = new Point(2, 16),
+                Location = new Point(2, 20),
                 AutoSize = true
             };
-            txtSearch = UiTheme.BoxedInput(60, 8, 300, out Panel searchBox);
+            txtSearch = UiTheme.BoxedInput(60, 12, 260, out Panel searchBox);
             txtSearch.TextChanged += (s, e) => LoadData();
+
+            var lblFilter = new Label
+            {
+                Text = "Role",
+                ForeColor = UiTheme.Muted,
+                Font = new Font("Segoe UI", 9F),
+                Location = new Point(348, 20),
+                AutoSize = true
+            };
+            cmbRoleFilter = UiTheme.FilterCombo(420, 13, 200);
+            cmbRoleFilter.SelectedIndexChanged += (s, e) =>
+            {
+                if (!refreshingFilter)
+                {
+                    LoadData();
+                }
+            };
+
             searchRow.Controls.Add(searchBox);
             searchRow.Controls.Add(lblSearch);
+            searchRow.Controls.Add(cmbRoleFilter);
+            searchRow.Controls.Add(lblFilter);
 
             grid = new DataGridView
             {
@@ -112,11 +138,47 @@ namespace WareHouseApp.Forms
         {
             try
             {
-                grid.DataSource = repository.Search(txtSearch.Text);
+                var list = repository.Search(txtSearch.Text);
+
+                string role = cmbRoleFilter.SelectedItem as string;
+                if (!string.IsNullOrEmpty(role) && role != AllRoles)
+                {
+                    list = list.Where(emp => (emp.Role ?? string.Empty) == role).ToList();
+                }
+
+                grid.DataSource = list;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void RefreshRoleFilter()
+        {
+            try
+            {
+                refreshingFilter = true;
+                string current = cmbRoleFilter.SelectedItem as string;
+
+                cmbRoleFilter.Items.Clear();
+                cmbRoleFilter.Items.Add(AllRoles);
+                foreach (string role in repository.GetAll()
+                    .Select(emp => emp.Role)
+                    .Where(r => !string.IsNullOrWhiteSpace(r))
+                    .Distinct()
+                    .OrderBy(r => r))
+                {
+                    cmbRoleFilter.Items.Add(role);
+                }
+
+                cmbRoleFilter.SelectedItem = current != null && cmbRoleFilter.Items.Contains(current)
+                    ? current
+                    : AllRoles;
+            }
+            finally
+            {
+                refreshingFilter = false;
             }
         }
 
@@ -163,6 +225,7 @@ namespace WareHouseApp.Forms
                 }
 
                 ClearForm();
+                RefreshRoleFilter();
                 LoadData();
             }
             catch (ValidationException ex)
@@ -194,6 +257,7 @@ namespace WareHouseApp.Forms
             {
                 repository.Delete(selectedId);
                 ClearForm();
+                RefreshRoleFilter();
                 LoadData();
             }
             catch (Exception ex)

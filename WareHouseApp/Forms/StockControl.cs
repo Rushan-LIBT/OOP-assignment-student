@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using WareHouseApp.Data;
 using WareHouseApp.Exceptions;
@@ -11,6 +12,8 @@ namespace WareHouseApp.Forms
     /// <summary>Stock in / stock out screen with a movement history.</summary>
     public class StockControl : UserControl
     {
+        private const string AllTypes = "All movements";
+
         private readonly Person currentUser;
         private readonly MaterialRepository materials = new MaterialRepository();
         private readonly StockMovementRepository movements = new StockMovementRepository();
@@ -18,6 +21,7 @@ namespace WareHouseApp.Forms
         private ComboBox cmbMaterial;
         private TextBox txtQuantity;
         private DataGridView grid;
+        private ComboBox cmbTypeFilter;
 
         public StockControl(Person user)
         {
@@ -87,15 +91,6 @@ namespace WareHouseApp.Forms
         {
             var card = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Card, Padding = new Padding(16) };
 
-            var header = new Label
-            {
-                Text = "Recent Movements",
-                Font = new Font("Segoe UI Semibold", 11F),
-                ForeColor = UiTheme.TextDark,
-                Dock = DockStyle.Top,
-                Height = 34
-            };
-
             grid = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -104,6 +99,32 @@ namespace WareHouseApp.Forms
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             };
             UiTheme.StyleGrid(grid);
+
+            var header = new Panel { Dock = DockStyle.Top, Height = 44, BackColor = UiTheme.Card };
+            var headerLabel = new Label
+            {
+                Text = "Recent Movements",
+                Font = new Font("Segoe UI Semibold", 11F),
+                ForeColor = UiTheme.TextDark,
+                Location = new Point(2, 10),
+                AutoSize = true
+            };
+            var lblFilter = new Label
+            {
+                Text = "Type",
+                ForeColor = UiTheme.Muted,
+                Font = new Font("Segoe UI", 9F),
+                Location = new Point(348, 12),
+                AutoSize = true
+            };
+            cmbTypeFilter = UiTheme.FilterCombo(420, 6, 200);
+            cmbTypeFilter.Items.AddRange(new object[] { AllTypes, "Stock In", "Stock Out" });
+            cmbTypeFilter.SelectedIndex = 0;
+            cmbTypeFilter.SelectedIndexChanged += (s, e) => LoadHistory();
+
+            header.Controls.Add(headerLabel);
+            header.Controls.Add(cmbTypeFilter);
+            header.Controls.Add(lblFilter);
 
             card.Controls.Add(grid);
             card.Controls.Add(header);
@@ -126,7 +147,19 @@ namespace WareHouseApp.Forms
         {
             try
             {
-                grid.DataSource = movements.GetRecent(50);
+                var list = movements.GetRecent(50);
+
+                string filter = cmbTypeFilter.SelectedItem as string;
+                if (filter == "Stock In")
+                {
+                    list = list.Where(m => m.MovementType == StockMovementRepository.In).ToList();
+                }
+                else if (filter == "Stock Out")
+                {
+                    list = list.Where(m => m.MovementType == StockMovementRepository.Out).ToList();
+                }
+
+                grid.DataSource = list;
             }
             catch (Exception ex)
             {

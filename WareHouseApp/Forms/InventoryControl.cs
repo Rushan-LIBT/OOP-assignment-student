@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using WareHouseApp.Data;
 using WareHouseApp.Exceptions;
@@ -10,8 +11,11 @@ namespace WareHouseApp.Forms
     /// <summary>Inventory management: list, search and CRUD for materials.</summary>
     public class InventoryControl : UserControl
     {
+        private const string AllCategories = "All categories";
+
         private readonly MaterialRepository repository = new MaterialRepository();
         private int selectedId;
+        private bool refreshingFilter;
 
         private DataGridView grid;
         private TextBox txtName;
@@ -19,10 +23,12 @@ namespace WareHouseApp.Forms
         private TextBox txtQuantity;
         private TextBox txtPrice;
         private TextBox txtSearch;
+        private ComboBox cmbCategoryFilter;
 
         public InventoryControl()
         {
             BuildUi();
+            RefreshCategoryFilter();
             LoadData();
         }
 
@@ -75,19 +81,39 @@ namespace WareHouseApp.Forms
         {
             var card = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Card, Padding = new Padding(16) };
 
-            var searchRow = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = UiTheme.Card };
+            var searchRow = new Panel { Dock = DockStyle.Top, Height = 56, BackColor = UiTheme.Card };
             var lblSearch = new Label
             {
                 Text = "Search",
                 ForeColor = UiTheme.Muted,
                 Font = new Font("Segoe UI", 9F),
-                Location = new Point(2, 16),
+                Location = new Point(2, 20),
                 AutoSize = true
             };
-            txtSearch = UiTheme.BoxedInput(60, 8, 300, out Panel searchBox);
+            txtSearch = UiTheme.BoxedInput(60, 12, 260, out Panel searchBox);
             txtSearch.TextChanged += (s, e) => LoadData();
+
+            var lblFilter = new Label
+            {
+                Text = "Category",
+                ForeColor = UiTheme.Muted,
+                Font = new Font("Segoe UI", 9F),
+                Location = new Point(348, 20),
+                AutoSize = true
+            };
+            cmbCategoryFilter = UiTheme.FilterCombo(420, 13, 200);
+            cmbCategoryFilter.SelectedIndexChanged += (s, e) =>
+            {
+                if (!refreshingFilter)
+                {
+                    LoadData();
+                }
+            };
+
             searchRow.Controls.Add(searchBox);
             searchRow.Controls.Add(lblSearch);
+            searchRow.Controls.Add(cmbCategoryFilter);
+            searchRow.Controls.Add(lblFilter);
 
             grid = new DataGridView
             {
@@ -110,11 +136,47 @@ namespace WareHouseApp.Forms
         {
             try
             {
-                grid.DataSource = repository.Search(txtSearch.Text);
+                var list = repository.Search(txtSearch.Text);
+
+                string category = cmbCategoryFilter.SelectedItem as string;
+                if (!string.IsNullOrEmpty(category) && category != AllCategories)
+                {
+                    list = list.Where(m => (m.Category ?? string.Empty) == category).ToList();
+                }
+
+                grid.DataSource = list;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void RefreshCategoryFilter()
+        {
+            try
+            {
+                refreshingFilter = true;
+                string current = cmbCategoryFilter.SelectedItem as string;
+
+                cmbCategoryFilter.Items.Clear();
+                cmbCategoryFilter.Items.Add(AllCategories);
+                foreach (string category in repository.GetAll()
+                    .Select(m => m.Category)
+                    .Where(c => !string.IsNullOrWhiteSpace(c))
+                    .Distinct()
+                    .OrderBy(c => c))
+                {
+                    cmbCategoryFilter.Items.Add(category);
+                }
+
+                cmbCategoryFilter.SelectedItem = current != null && cmbCategoryFilter.Items.Contains(current)
+                    ? current
+                    : AllCategories;
+            }
+            finally
+            {
+                refreshingFilter = false;
             }
         }
 
@@ -159,6 +221,7 @@ namespace WareHouseApp.Forms
                 }
 
                 ClearForm();
+                RefreshCategoryFilter();
                 LoadData();
             }
             catch (ValidationException ex)
@@ -190,6 +253,7 @@ namespace WareHouseApp.Forms
             {
                 repository.Delete(selectedId);
                 ClearForm();
+                RefreshCategoryFilter();
                 LoadData();
             }
             catch (Exception ex)
