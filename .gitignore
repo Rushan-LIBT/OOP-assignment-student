@@ -1,0 +1,14 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# ReSharper
+_ReSharper*/
+
+# Local DB lock/temp artifacts
+*.ldf.lock
