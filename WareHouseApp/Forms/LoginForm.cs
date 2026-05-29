@@ -115,10 +115,13 @@ namespace WareHouseApp.Forms
 
         private void OpenSignUp()
         {
+            Hide();
             using (var signUp = new SignUpForm())
             {
-                signUp.ShowDialog(this);
+                signUp.ShowDialog();
             }
+            Show();
+            txtUsername.Focus();
         }
     }
 }
