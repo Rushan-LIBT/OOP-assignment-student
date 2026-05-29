@@ -28,42 +28,66 @@ namespace WareHouseApp.Forms
 
         private void BuildUi()
         {
-            BackColor = Color.WhiteSmoke;
+            BackColor = UiTheme.AppBg;
+
+            Controls.Add(BuildTableCard());
+            Controls.Add(new Panel { Dock = DockStyle.Top, Height = 16, BackColor = UiTheme.AppBg });
+            Controls.Add(BuildFormCard());
+        }
+
+        private Panel BuildFormCard()
+        {
+            var card = UiTheme.CardPanel(DockStyle.Top, 210);
 
             var title = new Label
             {
-                Text = "Inventory Management",
-                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
-                Dock = DockStyle.Top,
-                Height = 40
+                Text = "Add / Edit Material",
+                Font = new Font("Segoe UI Semibold", 12F),
+                ForeColor = UiTheme.TextDark,
+                Location = new Point(24, 18),
+                AutoSize = true
             };
+            card.Controls.Add(title);
 
-            var form = new Panel { Dock = DockStyle.Top, Height = 120 };
-            txtName = AddField(form, "Name", 0);
-            txtCategory = AddField(form, "Category", 1);
-            txtQuantity = AddField(form, "Quantity", 2);
-            txtPrice = AddField(form, "Unit Price", 3);
+            int y = 58;
+            txtName = UiTheme.AddField(card, "NAME", 24, y, 190, false);
+            txtCategory = UiTheme.AddField(card, "CATEGORY", 238, y, 190, false);
+            txtQuantity = UiTheme.AddField(card, "QUANTITY", 452, y, 150, false);
+            txtPrice = UiTheme.AddField(card, "UNIT PRICE", 626, y, 150, false);
 
-            var actions = new Panel { Dock = DockStyle.Top, Height = 50 };
-            var btnAdd = MakeButton("Add", 0, Color.SeaGreen);
+            var btnAdd = UiTheme.ActionButton("Add", UiTheme.Success, 24, 150);
             btnAdd.Click += (s, e) => Save(false);
-            var btnUpdate = MakeButton("Update", 1, Color.RoyalBlue);
+            var btnUpdate = UiTheme.ActionButton("Update", UiTheme.Accent, 144, 150);
             btnUpdate.Click += (s, e) => Save(true);
-            var btnDelete = MakeButton("Delete", 2, Color.Firebrick);
+            var btnDelete = UiTheme.ActionButton("Delete", UiTheme.Danger, 264, 150);
             btnDelete.Click += (s, e) => DeleteSelected();
-            var btnClear = MakeButton("Clear", 3, Color.Gray);
+            var btnClear = UiTheme.ActionButton("Clear", UiTheme.Neutral, 384, 150);
             btnClear.Click += (s, e) => ClearForm();
-            actions.Controls.Add(btnAdd);
-            actions.Controls.Add(btnUpdate);
-            actions.Controls.Add(btnDelete);
-            actions.Controls.Add(btnClear);
 
-            var searchPanel = new Panel { Dock = DockStyle.Top, Height = 40 };
-            var lblSearch = new Label { Text = "Search:", Location = new Point(0, 10), AutoSize = true };
-            txtSearch = new TextBox { Location = new Point(60, 7), Width = 250 };
+            card.Controls.Add(btnAdd);
+            card.Controls.Add(btnUpdate);
+            card.Controls.Add(btnDelete);
+            card.Controls.Add(btnClear);
+            return card;
+        }
+
+        private Panel BuildTableCard()
+        {
+            var card = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Card, Padding = new Padding(16) };
+
+            var searchRow = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = UiTheme.Card };
+            var lblSearch = new Label
+            {
+                Text = "Search",
+                ForeColor = UiTheme.Muted,
+                Font = new Font("Segoe UI", 9F),
+                Location = new Point(2, 16),
+                AutoSize = true
+            };
+            txtSearch = UiTheme.BoxedInput(60, 8, 300, out Panel searchBox);
             txtSearch.TextChanged += (s, e) => LoadData();
-            searchPanel.Controls.Add(txtSearch);
-            searchPanel.Controls.Add(lblSearch);
+            searchRow.Controls.Add(searchBox);
+            searchRow.Controls.Add(lblSearch);
 
             grid = new DataGridView
             {
@@ -72,40 +96,14 @@ namespace WareHouseApp.Forms
                 AllowUserToAddRows = false,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                BackgroundColor = Color.White
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             };
+            UiTheme.StyleGrid(grid);
             grid.SelectionChanged += Grid_SelectionChanged;
 
-            Controls.Add(grid);
-            Controls.Add(searchPanel);
-            Controls.Add(actions);
-            Controls.Add(form);
-            Controls.Add(title);
-        }
-
-        private TextBox AddField(Panel parent, string label, int index)
-        {
-            int x = index * 200;
-            var lbl = new Label { Text = label, Location = new Point(x, 10), AutoSize = true };
-            var box = new TextBox { Location = new Point(x, 32), Width = 170 };
-            parent.Controls.Add(lbl);
-            parent.Controls.Add(box);
-            return box;
-        }
-
-        private Button MakeButton(string text, int index, Color color)
-        {
-            return new Button
-            {
-                Text = text,
-                Location = new Point(index * 110, 8),
-                Width = 100,
-                Height = 34,
-                BackColor = color,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
+            card.Controls.Add(grid);
+            card.Controls.Add(searchRow);
+            return card;
         }
 
         private void LoadData()

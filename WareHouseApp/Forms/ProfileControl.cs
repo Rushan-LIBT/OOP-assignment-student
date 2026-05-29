@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using WareHouseApp.Data;
 using WareHouseApp.Exceptions;
 using WareHouseApp.People;
+using WareHouseApp.Properties;
 
 namespace WareHouseApp.Forms
 {
@@ -25,73 +26,74 @@ namespace WareHouseApp.Forms
 
         private void BuildUi()
         {
-            BackColor = Color.WhiteSmoke;
+            BackColor = UiTheme.AppBg;
+
+            Controls.Add(new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.AppBg });
+            Controls.Add(BuildPasswordCard());
+            Controls.Add(new Panel { Dock = DockStyle.Top, Height = 16, BackColor = UiTheme.AppBg });
+            Controls.Add(BuildInfoCard());
+        }
+
+        private Panel BuildInfoCard()
+        {
+            var card = UiTheme.CardPanel(DockStyle.Top, 150);
+
+            var avatar = new PictureBox
+            {
+                Image = new Bitmap(Resources.user, new Size(72, 72)),
+                SizeMode = PictureBoxSizeMode.Zoom,
+                Size = new Size(72, 72),
+                Location = new Point(24, 36),
+                BackColor = Color.Transparent
+            };
+
+            var name = new Label
+            {
+                Text = string.IsNullOrEmpty(currentUser.FullName) ? currentUser.UserName : currentUser.FullName,
+                Font = new Font("Segoe UI Semibold", 15F),
+                ForeColor = UiTheme.TextDark,
+                Location = new Point(112, 42),
+                AutoSize = true
+            };
+
+            var meta = new Label
+            {
+                Text = "Username: " + currentUser.UserName + "      Role: " + currentUser.Role,
+                Font = new Font("Segoe UI", 10F),
+                ForeColor = UiTheme.Muted,
+                Location = new Point(114, 78),
+                AutoSize = true
+            };
+
+            card.Controls.Add(avatar);
+            card.Controls.Add(name);
+            card.Controls.Add(meta);
+            return card;
+        }
+
+        private Panel BuildPasswordCard()
+        {
+            var card = UiTheme.CardPanel(DockStyle.Top, 230);
 
             var title = new Label
             {
-                Text = "My Profile",
-                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
-                Dock = DockStyle.Top,
-                Height = 40
+                Text = "Change Password",
+                Font = new Font("Segoe UI Semibold", 12F),
+                ForeColor = UiTheme.TextDark,
+                Location = new Point(24, 18),
+                AutoSize = true
             };
 
-            var details = new Label
-            {
-                Text = "Username: " + currentUser.UserName +
-                       "\nFull name: " + (currentUser.FullName ?? "-") +
-                       "\nRole: " + currentUser.Role,
-                Font = new Font("Segoe UI", 10F),
-                Dock = DockStyle.Top,
-                Height = 80,
-                Padding = new Padding(0, 10, 0, 0)
-            };
+            txtCurrent = UiTheme.AddField(card, "CURRENT PASSWORD", 24, 58, 240, true);
+            txtNew = UiTheme.AddField(card, "NEW PASSWORD", 288, 58, 240, true);
+            txtConfirm = UiTheme.AddField(card, "CONFIRM NEW PASSWORD", 552, 58, 240, true);
 
-            var section = new Label
-            {
-                Text = "Change password",
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
-                Dock = DockStyle.Top,
-                Height = 30
-            };
-
-            var panel = new Panel { Dock = DockStyle.Top, Height = 200 };
-
-            txtCurrent = AddField(panel, "Current password", 0);
-            txtNew = AddField(panel, "New password", 1);
-            txtConfirm = AddField(panel, "Confirm new password", 2);
-
-            var btnSave = new Button
-            {
-                Text = "Update Password",
-                Location = new Point(0, 160),
-                Width = 200,
-                Height = 34,
-                BackColor = Color.RoyalBlue,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
+            var btnSave = UiTheme.ActionButton("Update Password", UiTheme.Accent, 24, 150, 200, 42);
             btnSave.Click += BtnSave_Click;
-            panel.Controls.Add(btnSave);
 
-            Controls.Add(panel);
-            Controls.Add(section);
-            Controls.Add(details);
-            Controls.Add(title);
-        }
-
-        private TextBox AddField(Panel parent, string label, int index)
-        {
-            int y = index * 50;
-            var lbl = new Label { Text = label, Location = new Point(0, y), AutoSize = true };
-            var box = new TextBox
-            {
-                Location = new Point(0, y + 20),
-                Width = 260,
-                UseSystemPasswordChar = true
-            };
-            parent.Controls.Add(lbl);
-            parent.Controls.Add(box);
-            return box;
+            card.Controls.Add(title);
+            card.Controls.Add(btnSave);
+            return card;
         }
 
         private void BtnSave_Click(object sender, EventArgs e)

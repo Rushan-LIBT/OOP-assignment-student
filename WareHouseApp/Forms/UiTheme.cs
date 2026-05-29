@@ -17,6 +17,95 @@ namespace WareHouseApp.Forms
         public static readonly Color Muted = Color.FromArgb(130, 137, 150);
         public static readonly Color Line = Color.FromArgb(214, 219, 230);
 
+        public static readonly Color AppBg = Color.FromArgb(243, 245, 249);
+        public static readonly Color Card = Color.White;
+        public static readonly Color SidebarActive = Color.FromArgb(48, 60, 102);
+        public static readonly Color Success = Color.FromArgb(39, 174, 96);
+        public static readonly Color Danger = Color.FromArgb(231, 76, 60);
+        public static readonly Color Neutral = Color.FromArgb(127, 140, 141);
+
+        /// <summary>A flat, coloured action button used inside the management screens.</summary>
+        public static Button ActionButton(string text, Color color, int x, int y, int width = 110, int height = 38)
+        {
+            var button = new Button
+            {
+                Text = text,
+                Location = new Point(x, y),
+                Size = new Size(width, height),
+                BackColor = color,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI Semibold", 9.5F),
+                Cursor = Cursors.Hand
+            };
+            button.FlatAppearance.BorderSize = 0;
+            return button;
+        }
+
+        /// <summary>A bordered, single-line search/input box that highlights on focus.</summary>
+        public static TextBox BoxedInput(int x, int y, int width, out Panel container, int height = 34)
+        {
+            container = new Panel
+            {
+                Location = new Point(x, y),
+                Size = new Size(width, height),
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle,
+                Padding = new Padding(8, 6, 8, 0)
+            };
+            var box = new TextBox
+            {
+                BorderStyle = BorderStyle.None,
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 11F)
+            };
+            container.Controls.Add(box);
+            return box;
+        }
+
+        /// <summary>A white "card" surface used to group content over the grey background.</summary>
+        public static Panel CardPanel(DockStyle dock, int height = 0)
+        {
+            var panel = new Panel
+            {
+                Dock = dock,
+                BackColor = Card
+            };
+            if (dock == DockStyle.Top && height > 0)
+            {
+                panel.Height = height;
+            }
+            return panel;
+        }
+
+        /// <summary>Applies a clean, modern style to a data grid.</summary>
+        public static void StyleGrid(DataGridView grid)
+        {
+            grid.BorderStyle = BorderStyle.None;
+            grid.BackgroundColor = Color.White;
+            grid.EnableHeadersVisualStyles = false;
+            grid.RowHeadersVisible = false;
+            grid.AllowUserToResizeRows = false;
+            grid.GridColor = Line;
+            grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            grid.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            grid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            grid.ColumnHeadersHeight = 42;
+
+            grid.ColumnHeadersDefaultCellStyle.BackColor = DarkPanel;
+            grid.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
+            grid.ColumnHeadersDefaultCellStyle.Padding = new Padding(8, 0, 0, 0);
+            grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = DarkPanel;
+
+            grid.DefaultCellStyle.Font = new Font("Segoe UI", 10F);
+            grid.DefaultCellStyle.Padding = new Padding(8, 0, 0, 0);
+            grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(225, 232, 255);
+            grid.DefaultCellStyle.SelectionForeColor = TextDark;
+            grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(247, 249, 252);
+            grid.RowTemplate.Height = 36;
+        }
+
         /// <summary>Adds a labelled text field with an underline that highlights on focus.</summary>
         public static TextBox AddField(Control parent, string label, int x, int y, int width, bool isPassword)
         {

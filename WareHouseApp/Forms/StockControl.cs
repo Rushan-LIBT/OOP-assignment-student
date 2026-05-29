@@ -29,68 +29,71 @@ namespace WareHouseApp.Forms
 
         private void BuildUi()
         {
-            BackColor = Color.WhiteSmoke;
+            BackColor = UiTheme.AppBg;
+
+            Controls.Add(BuildTableCard());
+            Controls.Add(new Panel { Dock = DockStyle.Top, Height = 16, BackColor = UiTheme.AppBg });
+            Controls.Add(BuildFormCard());
+        }
+
+        private Panel BuildFormCard()
+        {
+            var card = UiTheme.CardPanel(DockStyle.Top, 160);
 
             var title = new Label
             {
-                Text = "Stock In / Out",
-                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
-                Dock = DockStyle.Top,
-                Height = 40
+                Text = "Record Stock Movement",
+                Font = new Font("Segoe UI Semibold", 12F),
+                ForeColor = UiTheme.TextDark,
+                Location = new Point(24, 18),
+                AutoSize = true
             };
 
-            var panel = new Panel { Dock = DockStyle.Top, Height = 100 };
-
-            var lblMaterial = new Label { Text = "Material", Location = new Point(0, 10), AutoSize = true };
+            var lblMaterial = new Label
+            {
+                Text = "MATERIAL",
+                ForeColor = UiTheme.Muted,
+                Font = new Font("Segoe UI", 9F),
+                Location = new Point(24, 58),
+                AutoSize = true
+            };
             cmbMaterial = new ComboBox
             {
-                Location = new Point(0, 32),
-                Width = 260,
+                Location = new Point(24, 80),
+                Width = 280,
                 DropDownStyle = ComboBoxStyle.DropDownList,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 11F),
                 DisplayMember = "MaterialName",
                 ValueMember = "MaterialID"
             };
 
-            var lblQty = new Label { Text = "Quantity", Location = new Point(290, 10), AutoSize = true };
-            txtQuantity = new TextBox { Location = new Point(290, 32), Width = 120 };
+            txtQuantity = UiTheme.AddField(card, "QUANTITY", 330, 58, 150, false);
 
-            var btnIn = new Button
-            {
-                Text = "Stock In",
-                Location = new Point(440, 30),
-                Width = 110,
-                Height = 30,
-                BackColor = Color.SeaGreen,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
+            var btnIn = UiTheme.ActionButton("Stock In", UiTheme.Success, 510, 78, 120, 40);
             btnIn.Click += (s, e) => Record(StockMovementRepository.In);
-
-            var btnOut = new Button
-            {
-                Text = "Stock Out",
-                Location = new Point(560, 30),
-                Width = 110,
-                Height = 30,
-                BackColor = Color.Firebrick,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
+            var btnOut = UiTheme.ActionButton("Stock Out", UiTheme.Danger, 642, 78, 120, 40);
             btnOut.Click += (s, e) => Record(StockMovementRepository.Out);
 
-            panel.Controls.Add(lblMaterial);
-            panel.Controls.Add(cmbMaterial);
-            panel.Controls.Add(lblQty);
-            panel.Controls.Add(txtQuantity);
-            panel.Controls.Add(btnIn);
-            panel.Controls.Add(btnOut);
+            card.Controls.Add(title);
+            card.Controls.Add(lblMaterial);
+            card.Controls.Add(cmbMaterial);
+            card.Controls.Add(btnIn);
+            card.Controls.Add(btnOut);
+            return card;
+        }
 
-            var historyTitle = new Label
+        private Panel BuildTableCard()
+        {
+            var card = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Card, Padding = new Padding(16) };
+
+            var header = new Label
             {
-                Text = "Recent movements",
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+                Text = "Recent Movements",
+                Font = new Font("Segoe UI Semibold", 11F),
+                ForeColor = UiTheme.TextDark,
                 Dock = DockStyle.Top,
-                Height = 28
+                Height = 34
             };
 
             grid = new DataGridView
@@ -98,14 +101,13 @@ namespace WareHouseApp.Forms
                 Dock = DockStyle.Fill,
                 ReadOnly = true,
                 AllowUserToAddRows = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                BackgroundColor = Color.White
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             };
+            UiTheme.StyleGrid(grid);
 
-            Controls.Add(grid);
-            Controls.Add(historyTitle);
-            Controls.Add(panel);
-            Controls.Add(title);
+            card.Controls.Add(grid);
+            card.Controls.Add(header);
+            return card;
         }
 
         private void LoadMaterials()
